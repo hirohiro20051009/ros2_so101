@@ -1,0 +1,10 @@
+# so101_leader_ros2_bridge:
+so101_leader_interface:
+  ros__parameters:
+    port: "/dev/ttyACM1"
+    id: "so101_leader"
+    calibration_dir: "/home/hirok/.cache/huggingface/lerobot/calibration/teleoperators/so101_leader"
+    use_degrees: true
+    # max_relative_target: 10 # default is none
+    disable_torque_on_disconnect: true
+    publish_rate: 50.0

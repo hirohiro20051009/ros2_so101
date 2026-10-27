@@ -11,6 +11,16 @@ venv/
 test*/
 tmp/
 
+# Editor temporary files
+*.swp
+*.swo
+*~
+
+# Local backups
+*_org
+*.bak
+*.bak_*
+
 # Secrets
 .env
 .env.*
@@ -18,3 +28,4 @@ tmp/
 
 # OS
 .DS_Store
+src/so101_ros2/docs/_build/

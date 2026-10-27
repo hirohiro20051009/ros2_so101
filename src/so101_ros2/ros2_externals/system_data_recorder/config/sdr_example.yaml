@@ -1,0 +1,18 @@
+sdr:  
+  ros__parameters:
+    # The base name for each bag file. A timestamp will be appended to this.
+    bag_name_prefix: "robot_data"
+
+    # The parent directory where all recording session folders will be saved.
+    copy_destination: "/home/<user>/sdr_bags"
+
+    # Maximum size of each individual .db3 file in bytes before splitting.
+    max_file_size: 268435456  # 256 MiB
+
+    # List of topics and their types to record.
+    topic_names: [
+      "/chatter",
+    ]
+    topic_types: [
+      "std_msgs/msg/String",
+    ]
