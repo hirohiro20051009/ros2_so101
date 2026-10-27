@@ -1,0 +1,64 @@
+# ==============================================================================
+# MoveIt Servo (リアルタイム・ロボットアーム制御) 設定ファイル
+# ==============================================================================
+
+# --- シミュレーション設定 ---
+use_gazebo: false                  # Gazeboシミュレータを使用せず、実機ロボットを制御する場合は false
+
+# --- 入力コマンドのスケーリング（移動スピードの倍率調整） ---
+command_in_type: "unitless"        # 入力コマンドのタイプ（"unitless": 単位なし / "speed_m_s": m/sなどの速度指定）
+
+scale:
+  linear: 0.1                      # 直交座標（XYZ）の平行移動の拡大率 (1.0 = 100%)
+  rotational: 0.2                  # 直交座標の回転移動の拡大率
+  joint: 0.1                       # 各関節（Joint）移動の拡大率
+
+# --- パブリッシュ（制御出力）周期とモード ---
+publish_period: 0.034              # 制御コマンドの発行周期（0.034秒 ＝ 約30Hz）
+low_latency_mode: false            # 低遅延モードの有効化（応答性を優先する場合は true）
+
+# --- 出力コマンドの形式と含まれる要素 ---
+command_out_type: trajectory_msgs/JointTrajectory  # 出力メッセージ型 (JointTrajectory または std_msgs/Float64MultiArray)
+
+publish_joint_positions: true      # 出力メッセージに関節「位置」情報を含めるか
+publish_joint_velocities: true     # 出力メッセージに関節「速度」情報を含めるか
+publish_joint_accelerations: false # 出力メッセージに関節「加速度」情報を含めるか
+
+# --- 信号平滑化（スムージング）フィルタ ---
+# 入力の急激な変化によるロボットのガタつきを抑えるフィルタープラグインを指定
+smoothing_filter_plugin_name: "online_signal_smoothing::ButterworthFilterPlugin"
+
+# --- Planning Scene (環境認識) 設定 ---
+is_primary_planning_scene_monitor: false       # Servo自体をプライマリの環境モニタにするか（通常は MoveGroup に任せるため false）
+
+# --- ロボットのリンク・グループ定義 ---
+move_group_name: arm                           # MoveItで定義しているアームのグループ名
+planning_frame: base_link                      # 制御の基準となる座標系（ベースリンク）
+
+ee_frame_name: gripper_frame_link              # 制御対象となるエンドエフェクタ（手先・グリッパ）のフレーム名
+robot_link_command_frame: base_link            # 操作コマンドの基準となる参照座標系
+
+# --- 通信タイムアウトと安全停止 ---
+incoming_command_timeout: 0.1                  # 入力コマンドが途絶えたとみなす時間（秒）
+num_outgoing_halt_msgs_to_publish: 4           # タイムアウト時に送信する停止用メッセージの回数
+
+# --- 奇異点（シンギュラリティ）回避・関節限界設定 ---
+lower_singularity_threshold: 17.0              # 奇異点に近づいたと判断し減速を開始するしきい値（高いほど敏感）
+hard_stop_singularity_threshold: 30.0          # 奇異点へ極めて接近したため強制停止するしきい値
+joint_limit_margin: 0.1                        # 関節可動限界（ソフト限界）までの余裕マージン（ラジアン）
+leaving_singularity_threshold_multiplier: 2.0  # 奇異点から離れる方向への移動を許可する倍率
+
+# --- 通信トピック設定 ---
+cartesian_command_in_topic: ~/delta_twist_cmds # 空間速度指定（Twist）の入力トピック名
+joint_command_in_topic: ~/delta_joint_cmds     # 関節角度増分（JointJog）の入力トピック名
+joint_topic: /follower/joint_states            # 現在の関節状態を取得するトピック名
+status_topic: ~/status                         # MoveIt Servoの動作ステータス出力トピック名
+
+command_out_topic: /follower/arm_controller/joint_trajectory  # アームのコントローラ（ROS 2 Control）へ送る出力トピック名
+
+# --- 衝突検知（Collision Checking）設定 ---
+check_collisions: true                         # リアルタイムの衝突チェックを有効化
+collision_check_rate: 10.0                     # 衝突チェックの実行周波数（Hz）
+self_collision_proximity_threshold: 0.01       # 自己干渉（アーム同士）とみなす接近距離の閾値（メートル）
+scene_collision_proximity_threshold: 0.02      # 周囲の環境障害物とみなす接近距離の閾値（メートル）
+

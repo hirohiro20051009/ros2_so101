@@ -1,0 +1,105 @@
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.conditions import IfCondition, UnlessCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+from moveit_configs_utils import MoveItConfigsBuilder
+from moveit_configs_utils.launch_utils import DeclareBooleanLaunchArg
+
+
+def generate_launch_description():
+    moveit_config = (
+        MoveItConfigsBuilder("so101_new_calib", package_name="so101_moveit_config")
+        .to_moveit_configs()
+    )
+    launch_package_path = moveit_config.package_path
+    ld = LaunchDescription()
+
+    # ── 引数定義 ──────────────────────────────────────────
+    ld.add_action(DeclareBooleanLaunchArg("db", default_value=False))
+    ld.add_action(DeclareBooleanLaunchArg("debug", default_value=False))
+    ld.add_action(DeclareBooleanLaunchArg("use_rviz", default_value=True))
+    ld.add_action(
+        DeclareBooleanLaunchArg(
+            "use_fake_hardware",
+            default_value=True,
+            description="true=mock(simulation) / false=real robot via /follower/ topics",
+        )
+    )
+
+    # ── static_virtual_joint_tfs ──────────────────────────
+    virtual_joints_launch = launch_package_path / "launch/static_virtual_joint_tfs.launch.py"
+    if virtual_joints_launch.exists():
+        ld.add_action(
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(str(virtual_joints_launch)),
+            )
+        )
+
+    # ── robot_state_publisher ─────────────────────────────
+    # use_fake_hardware を rsp.launch.py に伝える（xacroへの引数になる）
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                str(launch_package_path / "launch/rsp.launch.py")
+            ),
+            launch_arguments={
+                "use_fake_hardware": LaunchConfiguration("use_fake_hardware"),
+            }.items(),
+        )
+    )
+
+    # ── move_group ────────────────────────────────────────
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                str(launch_package_path / "launch/move_group.launch.py")
+            ),
+        )
+    )
+
+    # ── RViz ─────────────────────────────────────────────
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                str(launch_package_path / "launch/moveit_rviz.launch.py")
+            ),
+            condition=IfCondition(LaunchConfiguration("use_rviz")),
+        )
+    )
+
+    # ── warehouse_db ──────────────────────────────────────
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                str(launch_package_path / "launch/warehouse_db.launch.py")
+            ),
+            condition=IfCondition(LaunchConfiguration("db")),
+        )
+    )
+
+    # ── ros2_control_node ─────────────────────────────────
+    # fake時: リマップなし
+    ld.add_action(
+        Node(
+            package="controller_manager",
+            executable="ros2_control_node",
+            parameters=[
+                moveit_config.robot_description,
+                str(moveit_config.package_path / "config/ros2_controllers.yaml"),
+            ],
+            condition=IfCondition(LaunchConfiguration("use_fake_hardware")),
+        )
+    )
+
+    # ── spawn_controllers ─────────────────────────────────
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                str(launch_package_path / "launch/spawn_controllers.launch.py")
+            ),
+        )
+    )
+
+    return ld

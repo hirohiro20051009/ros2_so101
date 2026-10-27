@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="so101_new_calib">
+    <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+    <!-- 追加：　fake/real切り替え引数 -->
+    <xacro:arg name="use_fake_hardware" default="true" />
+    
+    <!-- Import so101_new_calib urdf file -->
+    <xacro:include filename="$(find so101_description)/urdf/so101_new_calib.urdf" />
+
+    <!-- Import control_xacro -->
+    <xacro:include filename="so101_new_calib.ros2_control.xacro" />
+
+    <!-- use_fake_hardware を渡す、name も実態に合わせて変更 -->
+    <xacro:so101_new_calib_ros2_control
+        name="SO101System"
+        initial_positions_file="$(arg initial_positions_file)"
+        use_fake_hardware="$(arg use_fake_hardware)"
+    />
+</robot>

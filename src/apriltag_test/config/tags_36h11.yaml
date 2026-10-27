@@ -1,0 +1,22 @@
+apriltag:
+  ros__parameters:
+
+    image_transport: raw
+
+    family: 36h11
+
+    size: 0.06
+
+    max_hamming: 0
+
+    detector:
+      threads: 2
+      decimate: 2.0
+      blur: 0.0
+      refine: true
+      sharpening: 0.25
+
+    tag:
+      ids:    [0]
+      frames: ["tag36h11_0"]
+      sizes:  [0.06]
