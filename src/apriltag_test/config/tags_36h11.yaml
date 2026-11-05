@@ -17,6 +17,6 @@ apriltag:
       sharpening: 0.25
 
     tag:
-      ids:    [0]
-      frames: ["tag36h11_0"]
-      sizes:  [0.06]
+      ids:    [0, 1]
+      frames: ["tag36h11_0", "tag36h11_1"]
+      sizes:  [0.06, 0.06]

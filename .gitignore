@@ -8,8 +8,8 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
-test*/
-tmp/
+archive/
+test_*/
 
 # Editor temporary files
 *.swp
