@@ -2,6 +2,7 @@
 build/
 install/
 log/
+setup_so101.sh
 
 # Python
 __pycache__/
